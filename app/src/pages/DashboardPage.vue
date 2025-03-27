@@ -51,7 +51,7 @@ const handleCheckIn = async (): Promise<void> => {
     console.log("in");
     try {
         if (authStore.user && authStore.user.id) {
-            await checkInStore.checkIn(authStore.user.id, 'checkin');
+            await checkInStore.checkIn(authStore.user.id, 'check-in');
         } else {
             $q.notify('User is not logged in or ID is missing');
         }
@@ -68,7 +68,7 @@ const handleCheckOut = async (): Promise<void> => {
     console.log("out");
     try {
         if (authStore.user && authStore.user.id) {
-            await checkInStore.checkOut(authStore.user.id, 'checkout').then(() => {
+            await checkInStore.checkOut(authStore.user.id, 'check-out').then(() => {
                 $q.notify('Check-out successful');
             });
         } else {

@@ -10,8 +10,16 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/LoginPage.vue')
   },
   {
+    path:'/reset-password',
+    component: () => import('pages/ResetPasswordPage.vue')
+  },
+  {
     path: '/mood',
     component: () => import('pages/MoodSelectorModal.vue')
+  },
+  {
+    path: '/user-profile',
+    component: () => import('pages/UserProfilePage.vue')
   },
   {
     path: '/dashboard',

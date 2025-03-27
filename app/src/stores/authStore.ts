@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
-import { directus, readMe } from '../services/directus';
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { directus, passwordRequest, readMe } from '../services/directus';
+import { ref } from 'vue';
 
 interface User {
   id: string;
@@ -10,17 +9,17 @@ interface User {
   last_name?: string;
   role?: string;
   avatar?: string;
+  status?: string;
 }
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null);
-  const token = ref<string | null>(localStorage.getItem('directus_token'));
   const loading = ref(false);
+  const isAuthenticated = ref(false);
+  const isInitialized = ref(false);
   const error = ref<string | null>(null);
-  const router = useRouter();
 
 
-  const isAuthenticated = computed(() => !!token.value);
 
   // Login 
   async function login(credentials: { email: string; password: string }): Promise<boolean> {
@@ -31,8 +30,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await directus.login(credentials.email, credentials.password);
 
       if (response?.access_token) {
-        token.value = response.access_token;
-        localStorage.setItem('directus_token', token.value);
+        isAuthenticated.value = true;
         await fetchCurrentUser();
         return true;
       }
@@ -49,48 +47,76 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Fetch user
   async function fetchCurrentUser() {
-    if (!token.value) return;
-
     try {
+      const token = await directus.getToken();
+      isAuthenticated.value = !!token;
+      if (!isAuthenticated.value) return null;
       const me = await directus.request(readMe());
 
       if (me && typeof me === 'object' && 'email' in me) {
-        user.value = me as User;
-      } else {
-        throw new Error('Invalid user data received');
+        // Set user properties with proper typing
+        user.value = {
+          id: me.id,
+          email: me.email || '', // Handle potential null with empty string default
+          first_name: me.first_name || undefined,
+          last_name: me.last_name || undefined,
+          avatar: me.avatar || undefined,// Avatar can be string, object or undefined
+          status: me.status || undefined
+        };
+        return user.value;
       }
+
     } catch (err) {
       console.error('Error fetching current user:', err);
       await logout();
     }
   }
 
+
+  // Forgot password
+  async function sendResetRequest(email: string) {
+    try {
+      await directus.request(passwordRequest(email));
+      return true;
+    } catch (error) {
+      console.error('Reset request failed:', error);
+      alert('Failed to send reset request. Please try again.');
+      return false;
+    }
+  }
+
+
   // Logout
   async function logout() {
     try {
       await directus.logout();
-      user.value = null;
-      token.value = null;
-      localStorage.removeItem('directus_token');
       return true;
     } catch (err) {
       console.error('Logout error:', err);
       return false;
     } finally {
-      localStorage.removeItem('directus_token');
-      void router.push('/login');
+      user.value = null;
+      isAuthenticated.value = false;
     };
   }
 
-  // Auto-load user session on startup
+  // Initialize - check if user has a valid token
   async function init(): Promise<void> {
-    if (token.value) {
+    if (!isInitialized.value) {
       try {
-        await fetchCurrentUser();
+        // Check if we have a valid token
+        const token = await directus.getToken();
+        isAuthenticated.value = !!token;
+        
+        if (isAuthenticated.value) {
+          await fetchCurrentUser();
+        }
         console.log("refetched");
       } catch (err) {
-        console.log('Session not found or invalid:', err);
+        console.error('Token validation error:', err);
         await logout();
+      } finally {
+        isInitialized.value = true;
       }
     }
   }
@@ -98,12 +124,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
-    token,
     isAuthenticated,
     loading,
+    isInitialized,
     error,
     login,
     logout,
     init,
+    sendResetRequest,
   };
 });

@@ -38,7 +38,7 @@ const onSubmit = async () => {
 }
 
 onMounted(() => {
-    if(authStore.token) {
+    if(authStore.isAuthenticated) {
         void router.push('/dashboard');
         console.log("token exists");
     }else{
@@ -109,7 +109,7 @@ onMounted(() => {
                                     <q-checkbox v-model="rememberMe" label="Remember me" />
                                 </div>
                                 <div class="col text-right">
-                                    <q-btn flat dense color="primary" label="Forgot password?" />
+                                    <q-btn flat dense color="primary" to="/reset-password" label="Forgot password?" />
                                 </div>
                             </div>
 
