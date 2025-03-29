@@ -2,14 +2,14 @@
 import { useQuasar } from 'quasar';
 import { useAuthStore } from 'src/stores/authStore';
 import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
+const route = useRoute();
 const currentDateTime = ref(new Date());
 const loadingData = ref(true);
 const authStore = useAuthStore();
 const $q = useQuasar();
-
 
 
 
@@ -94,7 +94,7 @@ const avatarUrl = computed(() => authStore.user?.avatar || 'data:image/png;base6
                     </template>
 
                     <q-list>
-                        <q-item clickable v-close-popup @click="() => { }">
+                        <q-item clickable v-close-popup @click="() => router.push(`/user/${authStore.user?.id}`)">
                             <q-item-section>My Profile</q-item-section>
                         </q-item>
                         <q-item clickable v-close-popup @click="goToCheckIn">
@@ -111,11 +111,13 @@ const avatarUrl = computed(() => authStore.user?.avatar || 'data:image/png;base6
                 </q-btn-dropdown>
             </q-toolbar>
 
-            <q-tabs align="left" class="bg-primary text-white">
-                <q-route-tab to="/dashboard" label="Dashboard" icon="dashboard" />
-                <q-route-tab to="/dashboard/team" label="Team" icon="groups" />
-                <q-route-tab to="/dashboard/peoples" label="People" icon="people" />
-            </q-tabs>
+           <div v-if="!route.meta.hideSomeElements">
+                <q-tabs align="left" class="bg-primary text-white">
+                    <q-route-tab to="/dashboard" label="Dashboard" icon="dashboard" />
+                    <q-route-tab to="/dashboard/team" label="Team" icon="groups" />
+                    <q-route-tab to="/dashboard/peoples" label="People" icon="people" />
+                </q-tabs>
+           </div>
         </q-header>
 
         <q-page-container>

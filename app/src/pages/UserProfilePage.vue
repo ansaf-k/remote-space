@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { useUserStore } from 'src/stores/userStore';
+import { onMounted, reactive } from 'vue';
 
 // Define interfaces for user data and achievements
 interface Achievement {
@@ -19,87 +20,53 @@ interface TeamMember {
 }
 
 interface UserProfile {
-    id: number;
-    name: string;
+    id: string;
+    first_name: string;
+    last_name: string;
     email: string;
     avatar: string;
-    status: 'active' | 'inactive' | 'pending';
-    role: string;
-    department: string;
-    joinDate: string;
+    status: string;
+    role?: string;
+    joinDate?: string;
     lastActive: string;
-    achievements: Achievement[];
-    team: TeamMember[];
-    workHours: {
+    achievements?: Achievement[];
+    team?: TeamMember[];
+    workHours?: {
         total: number;
         thisWeek: number;
     };
-    performanceScore: number;
 }
 
+const userStore = useUserStore();
+
 // Reactive state for user profile with demo details
-const userProfile = ref<UserProfile>({
-    id: 1234,
-    name: 'Alex Rodriguez',
-    email: 'alex.rodriguez@remospace.com',
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    status: 'active',
-    role: 'Senior Product Manager',
-    department: 'Product Innovation',
-    joinDate: 'March 15, 2023',
-    lastActive: '2 hours ago',
-    achievements: [
-        {
-            id: 1,
-            title: 'Product Innovation',
-            description: 'Led 3 breakthrough product initiatives',
-            date: '2023-09-15',
-            icon: 'lightbulb',
-            color: 'purple'
-        },
-        {
-            id: 2,
-            title: 'Team Collaboration',
-            description: 'Highest cross-team collaboration score',
-            date: '2023-11-20',
-            icon: 'group',
-            color: 'blue'
-        },
-        {
-            id: 3,
-            title: 'Performance Excellence',
-            description: 'Exceeded quarterly targets',
-            date: '2024-01-10',
-            icon: 'stars',
-            color: 'green'
-        }
-    ],
-    team: [
-        {
-            id: 1,
-            name: 'Emma Thompson',
-            role: 'Product Designer',
-            avatar: 'https://randomuser.me/api/portraits/women/44.jpg'
-        },
-        {
-            id: 2,
-            name: 'David Kim',
-            role: 'Senior Developer',
-            avatar: 'https://randomuser.me/api/portraits/men/85.jpg'
-        },
-        {
-            id: 3,
-            name: 'Sarah Martinez',
-            role: 'UX Researcher',
-            avatar: 'https://randomuser.me/api/portraits/women/67.jpg'
-        }
-    ],
-    workHours: {
-        total: 782,
-        thisWeek: 36
-    },
-    performanceScore: 92
+const userProfile = reactive<UserProfile>({
+    id: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    avatar: '',
+    status: '',
+    role: '',
+    lastActive: '',
 });
+
+const fetchUserData = () => {
+    const user = userStore.profileUser
+
+    if (user) {
+        Object.assign(userProfile, {
+            id: user.id,
+            first_name: user.first_name || '',
+            last_name: user.last_name || '',
+            email: user.email,
+            avatar: user.avatar || 'data:image/jpeg;base64,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',
+            status: user.status || '',
+            role: user.role || '',
+            lastActive: user.last_access,
+        });
+    }
+}
 
 // Status color mapping
 const getStatusColor = (status: string) => {
@@ -110,6 +77,11 @@ const getStatusColor = (status: string) => {
         default: return 'grey';
     }
 };
+
+onMounted(async () => {
+    await userStore.fetchUserById();
+    fetchUserData()
+})
 </script>
 
 <template>
@@ -118,74 +90,60 @@ const getStatusColor = (status: string) => {
             <q-page class="full-width-profile bg-soft-white">
                 <div class="profile-container">
                     <!-- Profile Header -->
-                    <div class="profile-header">
+                    <div class="profile-header q-pb-md">
                         <div class="avatar-section">
                             <q-avatar size="120px" class="profile-avatar">
                                 <img :src="userProfile.avatar" alt="User Avatar">
                             </q-avatar>
-                            <q-badge :color="getStatusColor(userProfile.status)" rounded class="status-badge">
+                            <q-badge :color="getStatusColor(userStore.profileUser?.status as string)" rounded
+                                class="status-badge">
                                 {{ userProfile.status }}
                             </q-badge>
                         </div>
                         <div class="profile-info">
-                            <h4 class="q-mb-xs">{{ userProfile.name }}</h4>
-                            <div class="text-subtitle1 text-grey">
-                                {{ userProfile.role }} | {{ userProfile.department }}
+                            <h4 class="q-mb-xs">{{ `${userStore.profileUser?.first_name}
+                                ${userStore.profileUser?.last_name}` }}</h4>
+                            <div class="text-subtitle1 text-grey q-mb-sm">
+                                {{ userProfile.email }}
                             </div>
-                            <div class="q-mt-sm">
-                                <q-chip icon="event" color="primary" text-color="white">
-                                    Joined: {{ userProfile.joinDate }}
-                                </q-chip>
-                                <q-chip icon="access_time" color="secondary" text-color="white">
-                                    Last Active: {{ userProfile.lastActive }}
-                                </q-chip>
-                            </div>
+                            <!-- <div class="text-subtitle2 text-grey">
+                                {{ userProfile.role }} | department
+                            </div> -->
                         </div>
                     </div>
 
-                    <!-- Performance and Stats Section -->
-                    <div class="profile-stats q-mt-lg">
-                        <div class="row q-col-gutter-md">
-                            <div class="col-md-4 col-sm-12">
-                                <q-card class="stat-card">
-                                    <q-card-section>
-                                        <div class="text-h6">Work Hours</div>
-                                        <div class="text-subtitle2 text-grey">
-                                            Total: {{ userProfile.workHours.total }}
-                                            <br>
-                                            This Week: {{ userProfile.workHours.thisWeek }}
-                                        </div>
-                                    </q-card-section>
-                                </q-card>
+                    <!-- User Stats Section - Elegant Format without Cards -->
+                    <div class="user-stats-wrapper q-py-md">
+                        <div class="user-stats">
+                            <!-- <div class="stat-item">
+                                <q-icon name="event" color="primary" size="sm" class="q-mr-xs" />
+                                <span class="stat-label">Joined:</span>
+                                <span class="stat-value">{{ userProfile.joinDate }}</span>
+                            </div> -->
+                            <div class="stat-item">
+                                <q-icon name="access_time" color="secondary" size="sm" class="q-mr-xs" />
+                                <span class="stat-label">Last Active:</span>
+                                <span class="stat-value">{{ userProfile.lastActive }}</span>
                             </div>
-                            <div class="col-md-4 col-sm-12">
-                                <q-card class="stat-card">
-                                    <q-card-section>
-                                        <div class="text-h6">Performance</div>
-                                        <q-linear-progress :value="userProfile.performanceScore / 100" color="primary"
-                                            class="q-mt-sm" />
-                                        <div class="text-subtitle2 text-grey">
-                                            Score: {{ userProfile.performanceScore }}%
-                                        </div>
-                                    </q-card-section>
-                                </q-card>
-                            </div>
-                            <div class="col-md-4 col-sm-12">
-                                <q-card class="stat-card">
-                                    <q-card-section>
-                                        <div class="text-h6">Email</div>
-                                        <div class="text-subtitle2 text-grey">
-                                            {{ userProfile.email }}
-                                        </div>
-                                    </q-card-section>
-                                </q-card>
-                            </div>
+                            <!-- <div class="stat-item">
+                                <q-icon name="schedule" color="accent" size="sm" class="q-mr-xs" />
+                                <span class="stat-label">Total Hours:</span>
+                                <span class="stat-value">{{ userProfile.workHours.total }}</span>
+                            </div> -->
+                            <!-- <div class="stat-item">
+                                <q-icon name="today" color="accent" size="sm" class="q-mr-xs" />
+                                <span class="stat-label">This Week:</span>
+                                <span class="stat-value">{{ userProfile.workHours.thisWeek }} hours</span>
+                            </div> -->
                         </div>
                     </div>
 
-                    <!-- Achievements Section (GitHub-like) -->
-                    <div class="achievements-section q-mt-lg">
-                        <h5 class="q-mb-md">Achievements</h5>
+                    <!-- Divider -->
+                    <q-separator class="q-my-md" />
+
+                    <!-- Achievements Section -->
+                    <div v-if="userProfile.achievements" class="achievements-section q-mt-md">
+                        <h5 class="section-title">Achievements</h5>
                         <div class="row q-col-gutter-md">
                             <div v-for="achievement in userProfile.achievements" :key="achievement.id"
                                 class="col-md-4 col-sm-12">
@@ -209,9 +167,12 @@ const getStatusColor = (status: string) => {
                         </div>
                     </div>
 
+                    <!-- Divider -->
+                    <q-separator class="q-my-md" />
+
                     <!-- Team Section -->
-                    <div class="team-section q-mt-lg">
-                        <h5 class="q-mb-md">Current Team</h5>
+                    <div v-if="userProfile.team" class="team-section q-mt-md">
+                        <h5 class="section-title">Current Team</h5>
                         <div class="row q-col-gutter-md">
                             <div v-for="member in userProfile.team" :key="member.id" class="col-md-4 col-sm-12">
                                 <q-card class="team-member-card">
@@ -255,6 +216,7 @@ const getStatusColor = (status: string) => {
     display: flex;
     align-items: center;
     gap: 2rem;
+    border-bottom: 1px solid #f0f0f0;
 }
 
 .avatar-section {
@@ -272,17 +234,66 @@ const getStatusColor = (status: string) => {
     border: 3px solid var(--q-primary);
 }
 
-.stat-card,
+.user-stats-wrapper {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.user-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: flex-start;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+}
+
+.stat-label {
+    font-weight: 500;
+    margin-right: 0.5rem;
+    color: #666;
+}
+
+.stat-value {
+    color: #333;
+}
+
+.section-title {
+    position: relative;
+    padding-left: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 1.2em;
+    background-color: var(--q-primary);
+    border-radius: 2px;
+}
+
 .achievement-card,
 .team-member-card {
     height: 100%;
     transition: transform 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.stat-card:hover,
 .achievement-card:hover,
 .team-member-card:hover {
     transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .bg-soft-white {
@@ -293,6 +304,11 @@ const getStatusColor = (status: string) => {
     .profile-header {
         flex-direction: column;
         text-align: center;
+    }
+
+    .user-stats {
+        flex-direction: column;
+        gap: 0.75rem;
     }
 }
 </style>

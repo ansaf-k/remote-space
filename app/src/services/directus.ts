@@ -10,7 +10,8 @@ import {
     updateItem as updateItemOperation,
     passwordRequest,
     passwordReset,
-    type AuthenticationData
+    type AuthenticationData,
+    readUser
 } from '@directus/sdk';
 
 
@@ -41,5 +42,5 @@ const directus = createDirectus('http://localhost:8055')
 export {
     createItemOperation as createItem, deleteItemOperation as deleteItem, directus,
     readItems, readMe, updateItemOperation as updateItem, readCollections, passwordRequest,
-    passwordReset,
+    passwordReset,readUser
 };

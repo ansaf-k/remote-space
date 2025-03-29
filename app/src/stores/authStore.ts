@@ -55,14 +55,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (me && typeof me === 'object' && 'email' in me) {
         // Set user properties with proper typing
-        user.value = {
-          id: me.id,
-          email: me.email || '', // Handle potential null with empty string default
-          first_name: me.first_name || undefined,
-          last_name: me.last_name || undefined,
-          avatar: me.avatar || undefined,// Avatar can be string, object or undefined
-          status: me.status || undefined
-        };
+        user.value = me as User;
+        console.log(user.value);
         return user.value;
       }
 
@@ -71,7 +65,6 @@ export const useAuthStore = defineStore('auth', () => {
       await logout();
     }
   }
-
 
   // Forgot password
   async function sendResetRequest(email: string) {
@@ -84,7 +77,6 @@ export const useAuthStore = defineStore('auth', () => {
       return false;
     }
   }
-
 
   // Logout
   async function logout() {
@@ -107,11 +99,10 @@ export const useAuthStore = defineStore('auth', () => {
         // Check if we have a valid token
         const token = await directus.getToken();
         isAuthenticated.value = !!token;
-        
+
         if (isAuthenticated.value) {
           await fetchCurrentUser();
         }
-        console.log("refetched");
       } catch (err) {
         console.error('Token validation error:', err);
         await logout();
